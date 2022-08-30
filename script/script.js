@@ -41,9 +41,18 @@ const figure = { // creating object a matrix element
   ]
 };
 
-const figureName = ['I', 'O', 'T', 'L', 'J', 'Z', 'S'];
+const figureName = ['I', 'O', 'T', 'L', 'J', 'Z', 'S']; // name element;
 
-const color = ['Red', 'Fuchsia', 'Purple', 'Maroon', 'Yellow', 'Olive', 'Lime']; // color element`s
+const figureColor = ['Red', 'Fuchsia', 'Purple', 'Maroon', 'Yellow', 'Olive', 'Lime']; // color element`s
+
+let columnsPosition = 0; // the position of the element on the X axis 
+
+let randomElement = 0; // random element
+
+let barrierLeft = false; // barrier from the left
+
+let barrierRight = false; // barrier from the right
+
 
 function drawField() { // draw a playing field
   for (let i = 0; i < 200; i++) {
@@ -82,6 +91,12 @@ function writePlayField(matrix, rowPlayField, colPlayField) { // write matrix el
       }
       if (matrix[i][j] === 1 && playField[row + 1][col] === 2) {
         flag = true;
+      }
+      if (matrix[i][j] === 1 && playField[row][col - 1] === undefined || matrix[i][j] === 1 && playField[row][col - 1] === 2) {
+        barrierLeft = true;
+      }
+      if (matrix[i][j] === 1 && playField[row][col + 1] === undefined || matrix[i][j] === 1 && playField[row][col + 1] === 2) {
+        barrierRight = true;
       }
       col++;
     }
@@ -131,13 +146,58 @@ function clearPlayField(matrix, rowPlayField, colPlayField, playField, color) { 
   return flag;
 }
 
-function downElement(speed) {
+function randomValue(min, max) { // get random value
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function choosingShape(objFigure, arrFigure, randomValue) { // get a random element
+  const oldFigure = objFigure[arrFigure[randomValue]];
+  const newFigure = [];
+  for (let i = 0; i < oldFigure.length; i++) {
+    newFigure[i] = [];
+    for (let j = 0; j < oldFigure.length; j++) {
+      newFigure[i][j] = oldFigure[i][j];
+    }
+  }
+  return newFigure;
+}
+
+function choosingColor(arrColor, randomValue) { // get a random color`s element
+  return arrColor[randomValue];
+}
+
+function rotateFigure(figure) { // rotate figure
+  const newFigure = [];
+  for (let i = 0; i < figure.length; i++) {
+    newFigure[i] = [];
+  }
+
+  let row = 0;
+  let col = 0;
+
+  for (let i = 0; i < figure.length; i++) {
+    for (let j = figure.length - 1; j >= 0; j--) {
+      newFigure[row][col] = figure[j][i];
+      col++;
+    }
+    col = 0;
+    row++;
+  }
+  return newFigure;
+}
+
+function downElement(speed) { // element drop
   let rowDown = 0;
+  const randomColor = choosingColor(figureColor, randomValue(0, figureColor.length - 1));
+
+  randomElement = choosingShape(figure, figureName, randomValue(0, figureName.length - 1));
+
+  randomElement.length === 4 ? columnsPosition = 3 : columnsPosition = 4 // the initial position of the element
+
   const interval = setInterval(() => {
-    const flag = clearPlayField(figure.L, rowDown, 3, playField, 'green');
-    console.log(playField)
+    const flag = clearPlayField(randomElement, rowDown, columnsPosition, playField, randomColor);
     rowDown++;
-    if(flag){
+    if (flag) {
       clearInterval(interval);
       rowDown = 0;
       downElement(speed);
@@ -145,5 +205,19 @@ function downElement(speed) {
   }, speed);
 }
 
+downElement(200);
 
-downElement(100);
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowLeft' && !barrierLeft) { // element left
+    columnsPosition--;
+  }
+  if (e.key === 'ArrowRight' && !barrierRight) { // element right
+    columnsPosition++;
+  }
+  if (e.key === 'ArrowUp') {
+    randomElement = rotateFigure(randomElement); // element rotate
+    
+  }
+  barrierLeft = false;
+  barrierRight = false;
+});
