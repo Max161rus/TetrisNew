@@ -47,12 +47,17 @@ const figureColor = ['Red', 'Fuchsia', 'Purple', 'Maroon', 'Yellow', 'Olive', 'L
 
 let columnsPosition = 0; // the position of the element on the X axis 
 
+let rowPosition = 0; // the position of the element on the Y axis
+
 let randomElement = 0; // random element
 
 let barrierLeft = false; // barrier from the left
 
 let barrierRight = false; // barrier from the right
 
+let barrierDown = false; // barrier from the down
+
+let randomColor = ''; // stores random color
 
 function drawField() { // draw a playing field
   for (let i = 0; i < 200; i++) {
@@ -187,37 +192,48 @@ function rotateFigure(figure) { // rotate figure
 }
 
 function downElement(speed) { // element drop
-  let rowDown = 0;
-  const randomColor = choosingColor(figureColor, randomValue(0, figureColor.length - 1));
+
+  rowPosition = 0;
+
+  randomColor = choosingColor(figureColor, randomValue(0, figureColor.length - 1));
 
   randomElement = choosingShape(figure, figureName, randomValue(0, figureName.length - 1));
 
   randomElement.length === 4 ? columnsPosition = 3 : columnsPosition = 4 // the initial position of the element
 
+  randomElement.length === 4 ? rowPosition = 0 : rowPosition = 1 // the initial position of the element
+
   const interval = setInterval(() => {
-    const flag = clearPlayField(randomElement, rowDown, columnsPosition, playField, randomColor);
-    rowDown++;
+    rowPosition++;
+    const flag = clearPlayField(randomElement, rowPosition, columnsPosition, playField, randomColor);
     if (flag) {
       clearInterval(interval);
-      rowDown = 0;
       downElement(speed);
     }
   }, speed);
 }
 
-downElement(200);
+downElement(1000);
 
 document.addEventListener('keydown', (e) => {
+
+  clearPlayField(randomElement, rowPosition, columnsPosition, playField, randomColor);
+
   if (e.key === 'ArrowLeft' && !barrierLeft) { // element left
     columnsPosition--;
+    clearPlayField(randomElement, rowPosition, columnsPosition, playField, randomColor);
   }
   if (e.key === 'ArrowRight' && !barrierRight) { // element right
     columnsPosition++;
+    clearPlayField(randomElement, rowPosition, columnsPosition, playField, randomColor);
+  }
+  if (e.key === 'ArrowDown') { // element down
+    rowPosition++;
+    clearPlayField(randomElement, rowPosition, columnsPosition, playField, randomColor);
   }
   if (e.key === 'ArrowUp') {
     randomElement = rotateFigure(randomElement); // element rotate
-    
+    clearPlayField(randomElement, rowPosition, columnsPosition, playField, randomColor);
   }
-  barrierLeft = false;
-  barrierRight = false;
+  barrierLeft = barrierRight = false;
 });
