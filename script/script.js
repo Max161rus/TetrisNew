@@ -1,4 +1,3 @@
-
 const wrapperGame = document.querySelector('.wrapper__game'); // получаем элемент - обертку игрового поля
 
 const playField = []; // creating matrix a playing field 
@@ -57,7 +56,12 @@ let barrierRight = false; // barrier from the right
 
 let barrierDown = false; // barrier from the down
 
+let barrierRotate = false; // barrier during rotation
+
+let interval = 0;
+
 let randomColor = ''; // stores random color
+
 
 function drawField() { // draw a playing field
   for (let i = 0; i < 200; i++) {
@@ -102,6 +106,9 @@ function writePlayField(matrix, rowPlayField, colPlayField) { // write matrix el
       }
       if (matrix[i][j] === 1 && playField[row][col + 1] === undefined || matrix[i][j] === 1 && playField[row][col + 1] === 2) {
         barrierRight = true;
+      }
+      if (matrix[i][j] === 0 && playField[row][col] === undefined || matrix[i][j] === 0 && playField[row][col] === 2) {
+        barrierRotate = true;
       }
       col++;
     }
@@ -191,6 +198,43 @@ function rotateFigure(figure) { // rotate figure
   return newFigure;
 }
 
+function indexLineElement(playField) { // array of indexes of filled columns
+  let indexLine = [];
+  let index = 0;
+  for (let i = 2; i < 22; i++) {
+    if (playField[i].every(item => item === 2)) {
+      indexLine[index] = i;
+      index++;
+    }
+  }
+  return indexLine;
+}
+
+function deletePlayFieldVisual(index) { // remove the filled lines from the visual part
+  if (index.length !== 0) {
+    const arrCellPlayField = document.querySelectorAll('.wrapper__game-cube');
+    index.map((item, key) => {
+      for (let i = 0; i < arrCellPlayField.length; i++) {
+        if (i >= (index[key] - 2) * 10 && i < ((index[key] - 2) * 10) + 10) {
+          arrCellPlayField[i].remove();
+          const element = document.createElement('div');
+          element.classList.add('wrapper__game-cube');
+          wrapperGame.prepend(element);
+        }
+      }
+    });
+  }
+}
+
+function deletePlayFieldMatrix(index) { // delete the filled rows from the matrix
+  if (index.length !== 0) {
+    index.map(item => {
+      playField.splice(item, 1);
+      playField.splice(2, 0, [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+    });
+  }
+}
+
 function downElement(speed) { // element drop
 
   rowPosition = 0;
@@ -201,15 +245,18 @@ function downElement(speed) { // element drop
 
   randomElement.length === 4 ? columnsPosition = 3 : columnsPosition = 4 // the initial position of the element
 
-  randomElement.length === 4 ? rowPosition = 0 : rowPosition = 1 // the initial position of the element
+  randomElement.length === 4 ? rowPosition = 1 : rowPosition = 2 // the initial position of the element
 
-  const interval = setInterval(() => {
+  interval = setInterval(() => {
     rowPosition++;
-    const flag = clearPlayField(randomElement, rowPosition, columnsPosition, playField, randomColor);
-    if (flag) {
+    if (barrierDown) {
       clearInterval(interval);
+      const index = indexLineElement(playField);
+      deletePlayFieldVisual(index);
+      deletePlayFieldMatrix(index);
       downElement(speed);
     }
+    barrierDown = clearPlayField(randomElement, rowPosition, columnsPosition, playField, randomColor);
   }, speed);
 }
 
@@ -221,19 +268,26 @@ document.addEventListener('keydown', (e) => {
 
   if (e.key === 'ArrowLeft' && !barrierLeft) { // element left
     columnsPosition--;
-    clearPlayField(randomElement, rowPosition, columnsPosition, playField, randomColor);
+    barrierDown = clearPlayField(randomElement, rowPosition, columnsPosition, playField, randomColor);
   }
   if (e.key === 'ArrowRight' && !barrierRight) { // element right
     columnsPosition++;
-    clearPlayField(randomElement, rowPosition, columnsPosition, playField, randomColor);
+    barrierDown = clearPlayField(randomElement, rowPosition, columnsPosition, playField, randomColor);
   }
-  if (e.key === 'ArrowDown') { // element down
+  if (e.key === 'ArrowDown' && !barrierDown) { // element down
     rowPosition++;
-    clearPlayField(randomElement, rowPosition, columnsPosition, playField, randomColor);
+    barrierDown = clearPlayField(randomElement, rowPosition, columnsPosition, playField, randomColor);
   }
-  if (e.key === 'ArrowUp') {
+  if (e.key === 'ArrowUp' && !barrierRotate) {
     randomElement = rotateFigure(randomElement); // element rotate
     clearPlayField(randomElement, rowPosition, columnsPosition, playField, randomColor);
   }
-  barrierLeft = barrierRight = false;
+  if (e.key === ' ') { // element down
+    while (!barrierDown) {
+      rowPosition++;
+      barrierDown = clearPlayField(randomElement, rowPosition, columnsPosition, playField, randomColor);
+    }
+  }
+  barrierLeft = barrierRight = barrierRotate = false;
 });
+
