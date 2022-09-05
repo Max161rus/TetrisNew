@@ -1,6 +1,7 @@
 * {
   box-sizing: border-box;
 }
+
 .container {
   display: flex;
   justify-content: center;
@@ -22,11 +23,6 @@
   background-color: grey;
 }
 
-.wrapper__table {
-  width: 500px;
-  height: 1000px;
-}
-
 .wrapper__game-cube {
   width: 50px;
   height: 50px;
@@ -34,22 +30,25 @@
   border: 1px solid grey;
 }
 
-.el {
-  border: 1px solid red;
-}
-
-.index_1 {
-  background-color: red;
-}
-
-/* body {
+.wrapper__table {
+  width: 500px;
+  height: 1000px;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
   align-items: center;
 }
 
-#field {
-  background-color: grey;
-  height: 1000px;
+.wrapper__table-element{
   width: 500px;
-} */
+  height: 500px;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+}
+
+.wrapper__table-menu{
+  display: flex;
+  flex-direction: column;
+}
+
+
+

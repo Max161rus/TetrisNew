@@ -58,9 +58,11 @@ let barrierDown = false; // barrier from the down
 
 let barrierRotate = false; // barrier during rotation
 
-let interval = 0;
-
 let randomColor = ''; // stores random color
+
+let speedDown = 1000; // element drop rates
+
+let gamePoints = 0; // game points
 
 
 function drawField() { // draw a playing field
@@ -235,6 +237,29 @@ function deletePlayFieldMatrix(index) { // delete the filled rows from the matri
   }
 }
 
+function speedIncrease(flag) { // increase in the rate of falling of the element
+  if (flag.length !== 0) {
+    if (speedDown > 100) {
+      speedDown = speedDown - 50;
+    }
+  }
+}
+
+function scoringPoints(flag) {
+  if (flag.length !== 0) {
+    gamePoints = gamePoints + 100;
+  } else {
+    gamePoints = gamePoints + 10;
+  }
+  console.log(gamePoints);
+}
+
+function gameOwer() { // game ower
+  if (playField[2].some(item => item === 2)) {
+    console.log('game ower');
+  }
+}
+
 function downElement(speed) { // element drop
 
   rowPosition = 0;
@@ -247,20 +272,23 @@ function downElement(speed) { // element drop
 
   randomElement.length === 4 ? rowPosition = 1 : rowPosition = 2 // the initial position of the element
 
-  interval = setInterval(() => {
+  const interval = setInterval(() => {
+    gameOwer();
     rowPosition++;
     if (barrierDown) {
       clearInterval(interval);
       const index = indexLineElement(playField);
       deletePlayFieldVisual(index);
       deletePlayFieldMatrix(index);
-      downElement(speed);
+      speedIncrease(index);
+      scoringPoints(index);
+      downElement(speedDown);
     }
     barrierDown = clearPlayField(randomElement, rowPosition, columnsPosition, playField, randomColor);
   }, speed);
 }
 
-downElement(1000);
+downElement(speedDown);
 
 document.addEventListener('keydown', (e) => {
 
