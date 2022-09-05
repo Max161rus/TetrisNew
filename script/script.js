@@ -1,6 +1,10 @@
-const wrapperGame = document.querySelector('.wrapper__game'); // получаем элемент - обертку игрового поля
+const wrapperGame = document.querySelector('.wrapper__game'); // gameField visual
+
+const preElement = document.querySelector('.wrapper__table-element'); // preliminary element visual
 
 const playField = []; // creating matrix a playing field 
+
+const menuField = []; // creating matrix a menu field 
 
 const figure = { // creating object a matrix element
   'I': [
@@ -64,6 +68,11 @@ let speedDown = 1000; // element drop rates
 
 let gamePoints = 0; // game points
 
+let gameСycle = false; // the game has just started, if cycle > 0 gameСycle = true;
+
+let randomColorMenuElement = ''; // color of the menu item
+
+let randomElementMenu = 0; // random element menu
 
 function drawField() { // draw a playing field
   for (let i = 0; i < 200; i++) {
@@ -89,6 +98,75 @@ function zerosInPlayField() { // creating a matrix of the playing field
 }
 
 zerosInPlayField();
+
+function drawMenuField() { // draw a menu field
+  for (let i = 0; i < 100; i++) {
+    const element = document.createElement('div');
+    element.classList.add('wrapper__menu-cube');
+    preElement.appendChild(element);
+  }
+}
+
+drawMenuField();
+
+function zeroInMenuField() { // creating a matrix of the menu field
+  for (i = 0; i < 10; i++) {
+    menuField[i] = [];
+    for (let j = 0; j < 10; j++) {
+      menuField[i][j] = 0;
+    }
+  }
+}
+
+zeroInMenuField();
+
+function writeMenuField(matrix) { // write matrix element in menu field
+  let row = 5;
+  let col = 5;
+  for (let i = 0; i < matrix.length; i++) {
+    for (let j = 0; j < matrix.length; j++) {
+      menuField[row][col] = matrix[i][j];
+      col++;
+    }
+    col = 5;
+    row++;
+  }
+}
+
+function drawElementMenuField(color) { // let's paint over the elements of the munu field corresponding to 1
+  const arrCellMenuField = document.querySelectorAll('.wrapper__menu-cube');
+
+  let indexCellMenuField = 0;
+
+  menuField.map((item, key) => {
+    item.map(item => {
+      if (item === 1) {
+        arrCellMenuField[indexCellMenuField].style.backgroundColor = color;
+      } else if (item === 0) {
+        arrCellMenuField[indexCellMenuField].style.backgroundColor = 'white';
+      }
+      indexCellMenuField++;
+    })
+  })
+}
+
+function clearMenuField(matrix, color) { // remove the element matrix from the menu field
+  writeMenuField(matrix);
+  drawElementMenuField(color);
+  let row = 5;
+  let col = 5;
+  for (let i = 0; i < matrix.length; i++) {
+    for (let j = 0; j < matrix.length; j++) {
+      if(matrix[i][j] === 1) {
+        menuField[row][col] = 0;
+      }  
+      col++;
+    }
+    col = 5;
+    row++;
+  }
+}
+
 
 function writePlayField(matrix, rowPlayField, colPlayField) { // write matrix element in play field
   let row = rowPlayField;
@@ -245,7 +323,7 @@ function speedIncrease(flag) { // increase in the rate of falling of the element
   }
 }
 
-function scoringPoints(flag) {
+function scoringPoints(flag) { // score points
   if (flag.length !== 0) {
     gamePoints = gamePoints + 100;
   } else {
@@ -264,9 +342,21 @@ function downElement(speed) { // element drop
 
   rowPosition = 0;
 
-  randomColor = choosingColor(figureColor, randomValue(0, figureColor.length - 1));
+  if(!gameСycle){ 
+    randomColor = choosingColor(figureColor, randomValue(0, figureColor.length - 1));
+    randomElement = choosingShape(figure, figureName, randomValue(0, figureName.length - 1));
+  } else {
+    randomColor = randomColorMenuElement;
+    randomElement = randomElementMenu;
+  }
 
-  randomElement = choosingShape(figure, figureName, randomValue(0, figureName.length - 1));
+  gameСycle = true;
+
+  randomColorMenuElement = choosingColor(figureColor, randomValue(0, figureColor.length - 1));
+
+  randomElementMenu = choosingShape(figure, figureName, randomValue(0, figureName.length - 1));
+
+  clearMenuField(randomElementMenu, randomColorMenuElement); 
 
   randomElement.length === 4 ? columnsPosition = 3 : columnsPosition = 4 // the initial position of the element
 
