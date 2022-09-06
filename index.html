@@ -11,6 +11,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 </head>
 
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Tetris</title>
+  <link rel="stylesheet" href="style/style.css" />
+  <meta charset="UTF-8" />
+  <meta name="keywords" content="tetris" />
+  <meta name="descriptions" content="tetris game" />
+  <meta name="author" content="Maxim Oligov" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+</head>
+
 <body class="container">
   <div class="wrapper">
     <div class="wrapper__game"></div>
@@ -19,14 +32,14 @@
       <div class="wrapper__table-menu">
         <div class="inter__speed">
           <p>Задайте начальную скорость падения</p>
-          <input type="number" value="1" min="1" max="10"/>
+          <input id="speed" type="number" value="1" min="1" max="10"/>
         </div>
         <div class="game__points">
-          <p>Рекорд:</p>
-          <p>Текущий счет:</p>
+          <p id="record">Рекорд:</p>
+          <p id="score">Текущий счет: 0</p>
         </div>
         <div class="game__control">
-          <button>Старт</button>
+          <button id="start">Старт</button>
         </div>
       </div>
     </div>

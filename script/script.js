@@ -6,6 +6,14 @@ const playField = []; // creating matrix a playing field
 
 const menuField = []; // creating matrix a menu field 
 
+const initial  = document.querySelector("#speed"); // initial velocity input field
+
+const start = document.querySelector("#start"); // button start
+
+const score = document.querySelector("#score"); // current account
+
+const record = document.querySelector("#record"); // current record
+
 const figure = { // creating object a matrix element
   'I': [
     [0, 0, 0, 0],
@@ -142,8 +150,10 @@ function drawElementMenuField(color) { // let's paint over the elements of the m
     item.map(item => {
       if (item === 1) {
         arrCellMenuField[indexCellMenuField].style.backgroundColor = color;
+		arrCellMenuField[indexCellMenuField].style.border = "1px solid grey";
       } else if (item === 0) {
         arrCellMenuField[indexCellMenuField].style.backgroundColor = 'white';
+		arrCellMenuField[indexCellMenuField].style.border = "none";
       }
       indexCellMenuField++;
     })
@@ -315,6 +325,10 @@ function deletePlayFieldMatrix(index) { // delete the filled rows from the matri
   }
 }
 
+function initialSpeed(initial){ // setting the initial velocity of the element falling
+	speedDown = 1000/initial.value;
+}
+
 function speedIncrease(flag) { // increase in the rate of falling of the element
   if (flag.length !== 0) {
     if (speedDown > 100) {
@@ -323,18 +337,34 @@ function speedIncrease(flag) { // increase in the rate of falling of the element
   }
 }
 
-function scoringPoints(flag) { // score points
+function scoringPoints(flag, score) { // score points
   if (flag.length !== 0) {
-    gamePoints = gamePoints + 100;
+	flag.map(() => {
+	  gamePoints = gamePoints + 100;
+	});
   } else {
     gamePoints = gamePoints + 10;
   }
-  console.log(gamePoints);
+  score.innerText = `Текущий счет: ${gamePoints}`;
 }
 
+function serRecord (key, elem){ // write rocord`s
+	if(localStorage.getItem(key)){
+		if(+localStorage.getItem(key) < gamePoints){
+			localStorage.setItem(key, gamePoints);
+		}
+	} else {
+		localStorage.setItem(key, 0);
+	}
+	elem.innerText = `Рекорд: ${localStorage.getItem(key)}`;
+}
+
+serRecord('record', record);
+
 function gameOwer() { // game ower
-  if (playField[2].some(item => item === 2)) {
+  if (playField[1].some(item => item === 2) || playField[2].some(item => item === 2)) {
     console.log('game ower');
+	return true;
   }
 }
 
@@ -360,10 +390,11 @@ function downElement(speed) { // element drop
 
   randomElement.length === 4 ? columnsPosition = 3 : columnsPosition = 4 // the initial position of the element
 
-  randomElement.length === 4 ? rowPosition = 1 : rowPosition = 2 // the initial position of the element
+  randomElement.length === 4 ? rowPosition = 0 : rowPosition = 1 // the initial position of the element
+  
+  console.log(rowPosition);
 
   const interval = setInterval(() => {
-    gameOwer();
     rowPosition++;
     if (barrierDown) {
       clearInterval(interval);
@@ -371,16 +402,20 @@ function downElement(speed) { // element drop
       deletePlayFieldVisual(index);
       deletePlayFieldMatrix(index);
       speedIncrease(index);
-      scoringPoints(index);
+      scoringPoints(index, score);
+	  serRecord('record', record);
       downElement(speedDown);
     }
     barrierDown = clearPlayField(randomElement, rowPosition, columnsPosition, playField, randomColor);
+	if(gameOwer()){
+		clearInterval(interval);
+		//gameСycle = false;
+		return;
+	}
   }, speed);
 }
 
-downElement(speedDown);
-
-document.addEventListener('keydown', (e) => {
+document.addEventListener('keydown', (e) => { // moving an element
 
   clearPlayField(randomElement, rowPosition, columnsPosition, playField, randomColor);
 
@@ -409,3 +444,9 @@ document.addEventListener('keydown', (e) => {
   barrierLeft = barrierRight = barrierRotate = false;
 });
 
+start.addEventListener('click', () => { // starting the game
+	if(!gameСycle){
+		initialSpeed(initial);
+		downElement(speedDown);
+	}
+});
