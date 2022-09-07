@@ -26,7 +26,18 @@
 
 <body class="container">
   <div class="wrapper">
-    <div class="wrapper__game"></div>
+    <div class="wrapper__game">
+		<div class="wrapper__game-element"></div>
+		<div class="wrapper__game-over">
+			<h1 id="end__game">GAME OVER</h1>
+		</div>
+    <div class="wrapper__game-pause">
+			<h1 id="pause__game">PAUSE</h1>
+		</div>
+    <div class="wrapper__game-reset">
+			<h1 id="reset__game">RESET</h1>
+		</div>
+	</div>
     <div class="wrapper__table">
       <div class="wrapper__table-element"></div>
       <div class="wrapper__table-menu">
@@ -37,9 +48,6 @@
         <div class="game__points">
           <p id="record">Рекорд:</p>
           <p id="score">Текущий счет: 0</p>
-        </div>
-        <div class="game__control">
-          <button id="start">Старт</button>
         </div>
       </div>
     </div>

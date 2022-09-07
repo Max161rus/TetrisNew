@@ -1,4 +1,4 @@
-const wrapperGame = document.querySelector('.wrapper__game'); // gameField visual
+const wrapperGame = document.querySelector('.wrapper__game-element'); // gameField visual
 
 const preElement = document.querySelector('.wrapper__table-element'); // preliminary element visual
 
@@ -6,13 +6,21 @@ const playField = []; // creating matrix a playing field
 
 const menuField = []; // creating matrix a menu field 
 
-const initial  = document.querySelector("#speed"); // initial velocity input field
+const initial = document.querySelector("#speed"); // initial velocity input field
 
 const start = document.querySelector("#start"); // button start
+
+const stop = document.querySelector("#stop"); // button stop
 
 const score = document.querySelector("#score"); // current account
 
 const record = document.querySelector("#record"); // current record
+
+const gameEnd = document.querySelector(".wrapper__game-over"); // text Game Over
+
+const gamePause = document.querySelector(".wrapper__game-pause"); // text Pause
+
+const gameReset = document.querySelector(".wrapper__game-reset"); // text Reset
 
 const figure = { // creating object a matrix element
   'I': [
@@ -82,6 +90,12 @@ let randomColorMenuElement = ''; // color of the menu item
 
 let randomElementMenu = 0; // random element menu
 
+let flagStop = false; // pause flag
+
+let reset = false; // reset flag
+
+let interval = 0; // timer ID
+
 function drawField() { // draw a playing field
   for (let i = 0; i < 200; i++) {
     const element = document.createElement('div');
@@ -129,14 +143,14 @@ function zeroInMenuField() { // creating a matrix of the menu field
 zeroInMenuField();
 
 function writeMenuField(matrix) { // write matrix element in menu field
-  let row = 5;
-  let col = 5;
+  let row = 4;
+  let col = 4;
   for (let i = 0; i < matrix.length; i++) {
     for (let j = 0; j < matrix.length; j++) {
       menuField[row][col] = matrix[i][j];
       col++;
     }
-    col = 5;
+    col = 4;
     row++;
   }
 }
@@ -150,10 +164,10 @@ function drawElementMenuField(color) { // let's paint over the elements of the m
     item.map(item => {
       if (item === 1) {
         arrCellMenuField[indexCellMenuField].style.backgroundColor = color;
-		arrCellMenuField[indexCellMenuField].style.border = "1px solid grey";
+        arrCellMenuField[indexCellMenuField].style.border = "1px solid grey";
       } else if (item === 0) {
-        arrCellMenuField[indexCellMenuField].style.backgroundColor = 'white';
-		arrCellMenuField[indexCellMenuField].style.border = "none";
+        arrCellMenuField[indexCellMenuField].style.backgroundColor = 'PeachPuff';
+        arrCellMenuField[indexCellMenuField].style.border = "none";
       }
       indexCellMenuField++;
     })
@@ -163,16 +177,16 @@ function drawElementMenuField(color) { // let's paint over the elements of the m
 function clearMenuField(matrix, color) { // remove the element matrix from the menu field
   writeMenuField(matrix);
   drawElementMenuField(color);
-  let row = 5;
-  let col = 5;
+  let row = 4;
+  let col = 4;
   for (let i = 0; i < matrix.length; i++) {
     for (let j = 0; j < matrix.length; j++) {
-      if(matrix[i][j] === 1) {
+      if (matrix[i][j] === 1) {
         menuField[row][col] = 0;
-      }  
+      }
       col++;
     }
-    col = 5;
+    col = 4;
     row++;
   }
 }
@@ -325,8 +339,8 @@ function deletePlayFieldMatrix(index) { // delete the filled rows from the matri
   }
 }
 
-function initialSpeed(initial){ // setting the initial velocity of the element falling
-	speedDown = 1000/initial.value;
+function initialSpeed(initial) { // setting the initial velocity of the element falling
+  speedDown = 1000 / initial.value;
 }
 
 function speedIncrease(flag) { // increase in the rate of falling of the element
@@ -339,40 +353,61 @@ function speedIncrease(flag) { // increase in the rate of falling of the element
 
 function scoringPoints(flag, score) { // score points
   if (flag.length !== 0) {
-	flag.map(() => {
-	  gamePoints = gamePoints + 100;
-	});
+    flag.map(() => {
+      gamePoints = gamePoints + 100;
+    });
   } else {
     gamePoints = gamePoints + 10;
   }
   score.innerText = `Текущий счет: ${gamePoints}`;
 }
 
-function serRecord (key, elem){ // write rocord`s
-	if(localStorage.getItem(key)){
-		if(+localStorage.getItem(key) < gamePoints){
-			localStorage.setItem(key, gamePoints);
-		}
-	} else {
-		localStorage.setItem(key, 0);
-	}
-	elem.innerText = `Рекорд: ${localStorage.getItem(key)}`;
+function setRecord(key, elem) { // write rocord`s
+  if (localStorage.getItem(key)) {
+    if (+localStorage.getItem(key) < gamePoints) {
+      localStorage.setItem(key, gamePoints);
+    }
+  } else {
+    localStorage.setItem(key, 0);
+  }
+  elem.innerText = `Рекорд: ${localStorage.getItem(key)}`;
 }
 
-serRecord('record', record);
+setRecord('record', record);
 
-function gameOwer() { // game ower
+function gameOver(title) { // game ower
   if (playField[1].some(item => item === 2) || playField[2].some(item => item === 2)) {
-    console.log('game ower');
-	return true;
+    title.style.display = "block";
+    return true;
   }
 }
+
+function resetGame() { // reset game
+  zerosInPlayField();
+  drawElement(playField);
+  zeroInMenuField();
+  drawElementMenuField();
+  clearInterval(interval);
+  gameСycle = false;
+  flagStop = false;
+  reset = true;
+  gameEnd.style.display = "none";
+  gamePause.style.display = "none";
+  gameReset.style.display = "block";
+  setTimeout(() => {
+    gameReset.style.display = "none";
+  }, 1000);
+};
 
 function downElement(speed) { // element drop
 
   rowPosition = 0;
 
-  if(!gameСycle){ 
+  barrierDown = false;
+
+  reset = false;
+
+  if (!gameСycle) {
     randomColor = choosingColor(figureColor, randomValue(0, figureColor.length - 1));
     randomElement = choosingShape(figure, figureName, randomValue(0, figureName.length - 1));
   } else {
@@ -386,67 +421,85 @@ function downElement(speed) { // element drop
 
   randomElementMenu = choosingShape(figure, figureName, randomValue(0, figureName.length - 1));
 
-  clearMenuField(randomElementMenu, randomColorMenuElement); 
+  clearMenuField(randomElementMenu, randomColorMenuElement);
 
   randomElement.length === 4 ? columnsPosition = 3 : columnsPosition = 4 // the initial position of the element
 
-  randomElement.length === 4 ? rowPosition = 0 : rowPosition = 1 // the initial position of the element
-  
-  console.log(rowPosition);
+  interval = setInterval(() => {
+    if (!flagStop) {
+      if (barrierDown) {
+        clearInterval(interval);
+        const index = indexLineElement(playField);
+        deletePlayFieldVisual(index);
+        deletePlayFieldMatrix(index);
+        speedIncrease(index);
+        scoringPoints(index, score);
+        setRecord('record', record);
+        downElement(speedDown);
+      } else {
+        rowPosition++;
+        barrierDown = clearPlayField(randomElement, rowPosition, columnsPosition, playField, randomColor);
+        if (gameOver(gameEnd)) {
+          clearInterval(interval);
+          gameСycle = false;
+          return;
+        }
+      }
 
-  const interval = setInterval(() => {
-    rowPosition++;
-    if (barrierDown) {
-      clearInterval(interval);
-      const index = indexLineElement(playField);
-      deletePlayFieldVisual(index);
-      deletePlayFieldMatrix(index);
-      speedIncrease(index);
-      scoringPoints(index, score);
-	  serRecord('record', record);
-      downElement(speedDown);
     }
-    barrierDown = clearPlayField(randomElement, rowPosition, columnsPosition, playField, randomColor);
-	if(gameOwer()){
-		clearInterval(interval);
-		//gameСycle = false;
-		return;
-	}
+
   }, speed);
 }
 
 document.addEventListener('keydown', (e) => { // moving an element
 
-  clearPlayField(randomElement, rowPosition, columnsPosition, playField, randomColor);
-
-  if (e.key === 'ArrowLeft' && !barrierLeft) { // element left
-    columnsPosition--;
-    barrierDown = clearPlayField(randomElement, rowPosition, columnsPosition, playField, randomColor);
-  }
-  if (e.key === 'ArrowRight' && !barrierRight) { // element right
-    columnsPosition++;
-    barrierDown = clearPlayField(randomElement, rowPosition, columnsPosition, playField, randomColor);
-  }
-  if (e.key === 'ArrowDown' && !barrierDown) { // element down
-    rowPosition++;
-    barrierDown = clearPlayField(randomElement, rowPosition, columnsPosition, playField, randomColor);
-  }
-  if (e.key === 'ArrowUp' && !barrierRotate) {
-    randomElement = rotateFigure(randomElement); // element rotate
+  if (!reset && !flagStop) {
     clearPlayField(randomElement, rowPosition, columnsPosition, playField, randomColor);
-  }
-  if (e.key === ' ') { // element down
-    while (!barrierDown) {
+
+    if (e.key === 'ArrowLeft' && !barrierLeft) { // element left
+      columnsPosition--;
+      barrierDown = clearPlayField(randomElement, rowPosition, columnsPosition, playField, randomColor);
+    }
+    if (e.key === 'ArrowRight' && !barrierRight) { // element right
+      columnsPosition++;
+      barrierDown = clearPlayField(randomElement, rowPosition, columnsPosition, playField, randomColor);
+    }
+    if (e.key === 'ArrowDown' && !barrierDown) { // element down
       rowPosition++;
       barrierDown = clearPlayField(randomElement, rowPosition, columnsPosition, playField, randomColor);
     }
+    if (e.key === 'ArrowUp' && !barrierRotate) { // element rotate
+      randomElement = rotateFigure(randomElement);
+      clearPlayField(randomElement, rowPosition, columnsPosition, playField, randomColor);
+    }
+    if (e.key === ' ') { // element down
+      while (!barrierDown) {
+        rowPosition++;
+        barrierDown = clearPlayField(randomElement, rowPosition, columnsPosition, playField, randomColor);
+      }
+    }
+  }
+
+  if (e.key === 'Enter') { // start/pause
+    if (!gameСycle) {
+      zerosInPlayField();
+      drawElement(playField);
+      initialSpeed(initial);
+      downElement(speedDown);
+      gameEnd.style.display = "none";
+    } else {
+      if (!flagStop) {
+        flagStop = true;
+        gamePause.style.display = "block";
+      } else {
+        flagStop = false;
+        gamePause.style.display = "none";
+      }
+    }
+  }
+  if (e.key === 'Escape') {
+    resetGame();
   }
   barrierLeft = barrierRight = barrierRotate = false;
 });
 
-start.addEventListener('click', () => { // starting the game
-	if(!gameСycle){
-		initialSpeed(initial);
-		downElement(speedDown);
-	}
-});
