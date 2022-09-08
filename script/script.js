@@ -394,6 +394,7 @@ function resetGame() { // reset game
   gameEnd.style.display = "none";
   gamePause.style.display = "none";
   gameReset.style.display = "block";
+  score.innerText = `Текущий счет: 0`;
   setTimeout(() => {
     gameReset.style.display = "none";
   }, 1000);
@@ -454,7 +455,7 @@ function downElement(speed) { // element drop
 document.addEventListener('keydown', (e) => { // moving an element
 
   if (!reset && !flagStop) {
-    clearPlayField(randomElement, rowPosition, columnsPosition, playField, randomColor);
+    barrierDown = clearPlayField(randomElement, rowPosition, columnsPosition, playField, randomColor);
 
     if (e.key === 'ArrowLeft' && !barrierLeft) { // element left
       columnsPosition--;
@@ -468,7 +469,7 @@ document.addEventListener('keydown', (e) => { // moving an element
       rowPosition++;
       barrierDown = clearPlayField(randomElement, rowPosition, columnsPosition, playField, randomColor);
     }
-    if (e.key === 'ArrowUp' && !barrierRotate) { // element rotate
+    if (e.key === 'ArrowUp' && !barrierRotate && !barrierDown) { // element rotate
       randomElement = rotateFigure(randomElement);
       clearPlayField(randomElement, rowPosition, columnsPosition, playField, randomColor);
     }
@@ -482,6 +483,7 @@ document.addEventListener('keydown', (e) => { // moving an element
 
   if (e.key === 'Enter') { // start/pause
     if (!gameСycle) {
+      score.innerText = `Текущий счет: 0`;
       zerosInPlayField();
       drawElement(playField);
       initialSpeed(initial);
@@ -502,4 +504,3 @@ document.addEventListener('keydown', (e) => { // moving an element
   }
   barrierLeft = barrierRight = barrierRotate = false;
 });
-
