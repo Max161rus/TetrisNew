@@ -484,6 +484,7 @@ document.addEventListener('keydown', (e) => { // moving an element
   if (e.key === 'Enter') { // start/pause
     if (!gameСycle) {
       score.innerText = `Текущий счет: 0`;
+      gamePoints = 0;
       zerosInPlayField();
       drawElement(playField);
       initialSpeed(initial);
